@@ -11,10 +11,7 @@ class SalesDataCleaner:
         self.cleaned = False
 
     def get_cleaned_data(self):
-        if self.cleaned:
-            return self.sales_data.copy()
-        else:
-            return None
+        return self.sales_data.copy() if self.cleaned else None
     
     def write_to_csv(self, filepath):
         if self.cleaned:
@@ -22,7 +19,7 @@ class SalesDataCleaner:
     
     def clean(self):
         if not self.cleaned:
-            
+
             self.import_and_format()
 
             # print(self.sales_data.dtypes)
@@ -137,17 +134,13 @@ class SalesDataCleaner:
             return None
 
     @staticmethod
-    # expected float values are converted into float even if originally were wrongly coded as boolean or number
     def float_or_zero(x):
         try:
             float(x)
             return float(x)
         except ValueError:
             #keeping information of terrace if lost
-            if x == True or x == 1 or x == 'True' or x == 'TRUE':
-                return 0
-            else:
-                return None
+            return 0 if x in [True, 1, 'True', 'TRUE'] else None
     
     @staticmethod
     #expected float values are returned as None
@@ -194,10 +187,7 @@ class SalesDataCleaner:
         if pd.isna(row.postcode):
             legal_belgian_postcode_pattern = '[1-9][0-9][0-9][0-9]'
             extracted_postcodes = re.findall(legal_belgian_postcode_pattern, row.locality)
-            if len(extracted_postcodes) > 0:
-                row.postcode = extracted_postcodes[0]
-            else:
-                row.postcode = None
+            row.postcode = extracted_postcodes[0] if len(extracted_postcodes) > 0 else None
         return row
 
     def add_region_column(self):
@@ -213,9 +203,9 @@ class SalesDataCleaner:
             #'B' -> Brussels-Capital Region
             #'W' -> Walloon Region
             #'F' -> Flemish Region
-            if 1000 <= postcode and postcode <= 1299:
+            if 1000 <= postcode <= 1299:
                 region = 'B'
-            elif (1300 <= postcode and postcode <= 1499) or (4000 <= postcode and postcode <= 7999):
+            elif 1300 <= postcode <= 1499 or 4000 <= postcode <= 7999:
                 region = 'W'
             else:
                 region = 'F'
